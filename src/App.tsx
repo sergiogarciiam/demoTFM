@@ -1,48 +1,57 @@
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { PaintableModel } from "./PaintableModel";
 import { useState } from "react";
-import { usePaintTexture } from "./usePaintTexture";
+import { usePaintTexture } from "./hooks/usePaintTexture";
+import { Buttons } from "./components/Buttons";
+import { Colors } from "./components/Colors";
+import { CanvasComponent } from "./components/Canvas";
+import { SelectColor } from "./components/SelectColor";
+import { SelectMode } from "./components/SelectMode";
+import { CreateLayers } from "./components/CreateLayers";
+import { Layers } from "./components/Layers";
 
 function App() {
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const { texture, paint, clear, save, load } = usePaintTexture({});
+  const [colors, setColors] = useState({});
+  const [selectedColor, setSelectedColor] = useState("");
+  const [layers, setLayers] = useState(["Capa 0"]);
+  const { texture, strokesRef, paint, clear, save, load, back } =
+    usePaintTexture({});
 
   return (
-    <>
-      <label>
-        <input
-          type="checkbox"
-          onChange={() => setIsDrawing(!isDrawing)}
-        ></input>
-        Drawing Mode
-      </label>
-      <div>
-        <button onClick={save}>💾 Save</button>
-        <button onClick={load}>📥 Load</button>
-        <button onClick={clear}>♻️ Reset</button>
-      </div>
-      <Canvas
+    <main
+      style={{ width: "100vw", height: "100vh", display: "flex", gap: "20px" }}
+    >
+      <CanvasComponent
+        texture={texture}
+        strokesRef={strokesRef}
+        paint={paint}
+        isDrawing={isDrawing}
+        selectedColor={selectedColor}
+      ></CanvasComponent>
+      <div
         style={{
-          width: "90vw",
-          height: "90vh",
-          border: "1px solid black",
-          borderRadius: "15px",
           margin: "10px auto",
+          width: "fit-content",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
         }}
-        camera={{ position: [0, 150, 300], fov: 50 }}
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} />
-        <directionalLight position={[-5, -5, -5]} />
-        <PaintableModel texture={texture} paint={paint} isDrawing={isDrawing} />
-        <OrbitControls
-          enableDamping={false}
-          rotateSpeed={isDrawing ? 0 : 1}
-          target={[0, 100, 0]}
-        />
-      </Canvas>
-    </>
+        <SelectMode
+          isDrawing={isDrawing}
+          setIsDrawing={setIsDrawing}
+        ></SelectMode>
+        <Buttons clear={clear} save={save} load={load} back={back}></Buttons>
+        <SelectColor colors={colors} setColors={setColors}></SelectColor>
+        <CreateLayers setLayers={setLayers}></CreateLayers>
+        <Layers layers={layers}></Layers>
+        <Colors
+          colors={colors}
+          setColors={setColors}
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
+        ></Colors>
+      </div>
+    </main>
   );
 }
 

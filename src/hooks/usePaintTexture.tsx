@@ -1,13 +1,7 @@
 // usePaintTexture.js
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-
-type Stroke = {
-  u: number;
-  v: number;
-  color: string;
-  size: number;
-};
+import { Stroke } from "../utils/types";
 
 export function usePaintTexture({ size = 1024, initialColor = "#ffffff" }) {
   const canvasRef = useRef(document.createElement("canvas"));
@@ -64,5 +58,11 @@ export function usePaintTexture({ size = 1024, initialColor = "#ffffff" }) {
     data.forEach(({ u, v, color, size }: Stroke) => paint(u, v, color, size));
   };
 
-  return { texture, paint, clear, save, load };
+  const back = () => {
+    clear();
+    const data = JSON.parse(localStorage.getItem("backPaint") || "[]");
+    data.forEach(({ u, v, color, size }: Stroke) => paint(u, v, color, size));
+  };
+
+  return { texture, strokesRef, paint, clear, save, load, back };
 }
