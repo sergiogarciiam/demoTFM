@@ -1,23 +1,18 @@
 import { useGLTF } from "@react-three/drei";
 import { Mesh } from "three";
 import * as THREE from "three";
-import { RefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ThreeEvent } from "@react-three/fiber";
+import { DRAWING_MODE } from "../utils/constants";
 import { Stroke } from "../utils/types";
 
 export function PaintableModel({
   texture,
   strokesRef,
   paint,
-  isDrawing,
+  mode,
   selectedColor,
-}: {
-  texture: THREE.Texture;
-  strokesRef: RefObject<Stroke[]>;
-  paint: (u: number, v: number, color: string) => void;
-  isDrawing: boolean;
-  selectedColor: string;
-}) {
+}: PaintableModelProps) {
   const { scene } = useGLTF("/male.glb");
   const mesh = scene.children[0] as Mesh;
 
@@ -25,7 +20,6 @@ export function PaintableModel({
 
   const isPainting = useRef(false);
 
-  // Habilitamos pintar continuo al mover el mouse mientras está presionado
   useEffect(() => {
     const handleMouseUp = () => {
       isPainting.current = false;
@@ -54,9 +48,17 @@ export function PaintableModel({
     <>
       <primitive
         object={scene}
-        onPointerDown={isDrawing && handlePointerDown}
-        onPointerMove={isDrawing && handlePointerMove}
+        onPointerDown={mode === DRAWING_MODE && handlePointerDown}
+        onPointerMove={mode === DRAWING_MODE && handlePointerMove}
       />
     </>
   );
 }
+
+type PaintableModelProps = {
+  texture: THREE.Texture;
+  strokesRef: React.MutableRefObject<Stroke[]>;
+  paint: (u: number, v: number, color?: string, size?: number) => void;
+  mode: string;
+  selectedColor: string;
+};

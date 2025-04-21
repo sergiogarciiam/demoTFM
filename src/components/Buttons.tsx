@@ -1,4 +1,4 @@
-export function Buttons({ save, load, clear, back }) {
+export function Buttons({ save, load, clear, back }: ButtonsProps) {
   return (
     <div>
       <button onClick={save}>Guardar</button>
@@ -8,3 +8,10 @@ export function Buttons({ save, load, clear, back }) {
     </div>
   );
 }
+
+type ButtonsProps = {
+  save: () => void;
+  load: () => void;
+  clear: () => void;
+  back: () => void;
+};

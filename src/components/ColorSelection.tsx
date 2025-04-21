@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export function SelectColor({ colors, setColors }) {
+export function ColorSelection({
+  colors,
+  setColors,
+  setSelectedColor,
+}: ColorSelectionProps) {
   const [color, setColor] = useState<[string, string]>(["#000", ""]);
 
   return (
@@ -17,6 +21,7 @@ export function SelectColor({ colors, setColors }) {
         onClick={() => {
           const nextIndex = Object.keys(colors).length;
           setColors({ ...colors, [nextIndex]: color });
+          setSelectedColor(color[0]);
         }}
       >
         Save color
@@ -24,3 +29,11 @@ export function SelectColor({ colors, setColors }) {
     </div>
   );
 }
+
+type ColorSelectionProps = {
+  colors: { [key: string]: [string, string] };
+  setColors: React.Dispatch<
+    React.SetStateAction<{ [key: string]: [string, string] }>
+  >;
+  setSelectedColor: React.Dispatch<React.SetStateAction<string>>;
+};

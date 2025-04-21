@@ -1,8 +1,11 @@
-type ColorsProps = {
-  colors: Record<string, [string, string]>;
-};
+import { ColorSelection } from "./ColorSelection";
 
-export function Colors({ colors, setColors, selectedColor, setSelectedColor }) {
+export function ColorsList({
+  colors,
+  setColors,
+  selectedColor,
+  setSelectedColor,
+}: ColorsListProps) {
   const handleDeleteColor = (key: string) => {
     const colorToRemove = colors[key][0];
     const updatedColors = { ...colors };
@@ -18,6 +21,11 @@ export function Colors({ colors, setColors, selectedColor, setSelectedColor }) {
   return (
     <div>
       <h2>Colores</h2>
+      <ColorSelection
+        colors={colors}
+        setColors={setColors}
+        setSelectedColor={setSelectedColor}
+      ></ColorSelection>
       {Object.keys(colors).map((key) => (
         <div
           style={{
@@ -60,3 +68,12 @@ export function Colors({ colors, setColors, selectedColor, setSelectedColor }) {
     </div>
   );
 }
+
+type ColorsListProps = {
+  colors: { [key: string]: [string, string] };
+  setColors: React.Dispatch<
+    React.SetStateAction<{ [key: string]: [string, string] }>
+  >;
+  selectedColor: string;
+  setSelectedColor: React.Dispatch<React.SetStateAction<string>>;
+};

@@ -1,14 +1,17 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { PaintableModel } from "./PaintableModel";
+import { ROTATE_MODE } from "../utils/constants";
+import * as THREE from "three";
+import { Stroke } from "../utils/types";
 
 export function CanvasComponent({
   texture,
   strokesRef,
   paint,
-  isDrawing,
+  mode,
   selectedColor,
-}) {
+}: CanvasCOmponentProps) {
   return (
     <Canvas
       style={{
@@ -25,14 +28,22 @@ export function CanvasComponent({
         texture={texture}
         strokesRef={strokesRef}
         paint={paint}
-        isDrawing={isDrawing}
+        mode={mode}
         selectedColor={selectedColor}
       />
       <OrbitControls
         enableDamping={false}
-        rotateSpeed={isDrawing ? 0 : 1}
+        rotateSpeed={mode === ROTATE_MODE ? 1 : 0}
         target={[0, 100, 0]}
       />
     </Canvas>
   );
 }
+
+type CanvasCOmponentProps = {
+  texture: THREE.Texture;
+  strokesRef: React.MutableRefObject<Stroke[]>;
+  paint: (u: number, v: number, color?: string, size?: number) => void;
+  mode: string;
+  selectedColor: string;
+};

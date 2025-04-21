@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { usePaintTexture } from "./hooks/usePaintTexture";
 import { Buttons } from "./components/Buttons";
-import { Colors } from "./components/Colors";
+import { ColorsList } from "./components/ColorsList";
 import { CanvasComponent } from "./components/Canvas";
-import { SelectColor } from "./components/SelectColor";
-import { SelectMode } from "./components/SelectMode";
-import { CreateLayers } from "./components/CreateLayers";
-import { Layers } from "./components/Layers";
+import { ModeSelector } from "./components/ModeSelector";
+import { ROTATE_MODE } from "./utils/constants";
 
 function App() {
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [mode, setMode] = useState<string>(ROTATE_MODE);
   const [colors, setColors] = useState({});
   const [selectedColor, setSelectedColor] = useState("");
-  const [layers, setLayers] = useState(["Capa 0"]);
   const { texture, strokesRef, paint, clear, save, load, back } =
     usePaintTexture({});
 
@@ -24,7 +21,7 @@ function App() {
         texture={texture}
         strokesRef={strokesRef}
         paint={paint}
-        isDrawing={isDrawing}
+        mode={mode}
         selectedColor={selectedColor}
       ></CanvasComponent>
       <div
@@ -36,20 +33,14 @@ function App() {
           gap: "20px",
         }}
       >
-        <SelectMode
-          isDrawing={isDrawing}
-          setIsDrawing={setIsDrawing}
-        ></SelectMode>
+        <ModeSelector mode={mode} setMode={setMode}></ModeSelector>
         <Buttons clear={clear} save={save} load={load} back={back}></Buttons>
-        <SelectColor colors={colors} setColors={setColors}></SelectColor>
-        <CreateLayers setLayers={setLayers}></CreateLayers>
-        <Layers layers={layers}></Layers>
-        <Colors
+        <ColorsList
           colors={colors}
           setColors={setColors}
           selectedColor={selectedColor}
           setSelectedColor={setSelectedColor}
-        ></Colors>
+        ></ColorsList>
       </div>
     </main>
   );
