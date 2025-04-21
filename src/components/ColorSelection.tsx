@@ -24,7 +24,7 @@ export function ColorSelection({
           setSelectedColor(color[0]);
         }}
       >
-        Save color
+        Guardar color
       </button>
     </div>
   );

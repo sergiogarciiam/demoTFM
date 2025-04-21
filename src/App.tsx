@@ -4,14 +4,24 @@ import { Buttons } from "./components/Buttons";
 import { ColorsList } from "./components/ColorsList";
 import { CanvasComponent } from "./components/Canvas";
 import { ModeSelector } from "./components/ModeSelector";
+import { LayerSelector } from "./components/LayerSelector";
 import { ROTATE_MODE } from "./utils/constants";
 
 function App() {
   const [mode, setMode] = useState<string>(ROTATE_MODE);
   const [colors, setColors] = useState({});
   const [selectedColor, setSelectedColor] = useState("");
-  const { texture, strokesRef, paint, clear, save, load, back } =
-    usePaintTexture({});
+  const [selectedLayer, setSelectedLayer] = useState(0);
+  const {
+    texture,
+    strokesRefs,
+    paint,
+    clearLayer,
+    clearAllLayers,
+    save,
+    load,
+    setActiveLayer,
+  } = usePaintTexture({});
 
   return (
     <main
@@ -19,7 +29,7 @@ function App() {
     >
       <CanvasComponent
         texture={texture}
-        strokesRef={strokesRef}
+        strokesRef={strokesRefs}
         paint={paint}
         mode={mode}
         selectedColor={selectedColor}
@@ -34,7 +44,17 @@ function App() {
         }}
       >
         <ModeSelector mode={mode} setMode={setMode}></ModeSelector>
-        <Buttons clear={clear} save={save} load={load} back={back}></Buttons>
+        <Buttons
+          clear={() => clearLayer(selectedLayer)}
+          clearAll={clearAllLayers}
+          save={save}
+          load={load}
+        ></Buttons>
+        <LayerSelector
+          setActiveLayer={setActiveLayer}
+          selectedLayer={selectedLayer}
+          setSelectedLayer={setSelectedLayer}
+        ></LayerSelector>
         <ColorsList
           colors={colors}
           setColors={setColors}

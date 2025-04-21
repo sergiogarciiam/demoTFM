@@ -11,7 +11,7 @@ export function CanvasComponent({
   paint,
   mode,
   selectedColor,
-}: CanvasCOmponentProps) {
+}: CanvasComponentProps) {
   return (
     <Canvas
       style={{
@@ -40,9 +40,9 @@ export function CanvasComponent({
   );
 }
 
-type CanvasCOmponentProps = {
+type CanvasComponentProps = {
   texture: THREE.Texture;
-  strokesRef: React.MutableRefObject<Stroke[]>;
+  strokesRef: React.MutableRefObject<Stroke[][]>;
   paint: (u: number, v: number, color?: string, size?: number) => void;
   mode: string;
   selectedColor: string;

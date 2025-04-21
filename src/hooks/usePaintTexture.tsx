@@ -4,26 +4,30 @@ import * as THREE from "three";
 import { Stroke } from "../utils/types";
 
 export function usePaintTexture({ size = 1024, initialColor = "#ffffff" }) {
-  const canvasRef = useRef(document.createElement("canvas"));
-  const strokesRef = useRef<Stroke[]>([]);
+  const canvasRefs = useRef<HTMLCanvasElement[]>([]);
+  const strokesRefs = useRef<Stroke[][]>([]);
+  const activeLayer = useRef(0);
 
   const texture = useMemo(() => {
-    const canvas = canvasRef.current;
-    canvas.width = canvas.height = size;
-
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.fillStyle = initialColor;
-      ctx.fillRect(0, 0, size, size);
-    }
-
-    const tex = new THREE.CanvasTexture(canvas);
+    const canvases = Array.from({ length: 3 }, () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = initialColor;
+        ctx.fillRect(0, 0, size, size);
+      }
+      return canvas;
+    });
+    canvasRefs.current = canvases;
+    strokesRefs.current = canvases.map(() => []);
+    const tex = new THREE.CanvasTexture(canvases[0]);
     tex.needsUpdate = true;
     return tex;
   }, [initialColor, size]);
 
   const paint = (u: number, v: number, color = "red", size = 10) => {
-    const canvas = canvasRef.current;
+    const canvas = canvasRefs.current[activeLayer.current];
     const ctx = canvas.getContext("2d");
     const x = u * canvas.width;
     const y = (1 - v) * canvas.height; // invert Y
@@ -33,36 +37,100 @@ export function usePaintTexture({ size = 1024, initialColor = "#ffffff" }) {
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
     }
-    texture.needsUpdate = true;
-    strokesRef.current.push({ u, v, color, size });
+    strokesRefs.current[activeLayer.current].push({ u, v, color, size });
+    updateTexture();
   };
 
-  const clear = () => {
-    const canvas = canvasRef.current;
+  const updateTexture = () => {
+    const combinedCanvas = document.createElement("canvas");
+    combinedCanvas.width = combinedCanvas.height = size;
+    const ctx = combinedCanvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, combinedCanvas.width, combinedCanvas.height);
+
+      canvasRefs.current.forEach((canvas) => {
+        ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = "multiply";
+        ctx.drawImage(canvas, 0, 0);
+      });
+    }
+    texture.image = combinedCanvas;
+    texture.needsUpdate = true;
+  };
+
+  const clearLayer = (layer: number) => {
+    const canvas = canvasRefs.current[layer];
     const ctx = canvas.getContext("2d");
     if (ctx) {
       ctx.fillStyle = initialColor;
       ctx.fillRect(0, 0, size, size);
     }
-    strokesRef.current = [];
-    texture.needsUpdate = true;
+    strokesRefs.current[layer] = [];
+    updateTexture();
+  };
+
+  const clearAllLayers = () => {
+    canvasRefs.current.forEach((canvas, index) => {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = initialColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      strokesRefs.current[index] = [];
+    });
+    updateTexture();
+  };
+
+  const setActiveLayer = (layer: number) => {
+    if (layer >= 0 && layer < canvasRefs.current.length) {
+      activeLayer.current = layer;
+    } else {
+      console.error(`Invalid layer index: ${layer}`);
+    }
   };
 
   const save = () => {
-    localStorage.setItem("paintData", JSON.stringify(strokesRef.current));
+    const data = JSON.stringify(strokesRefs.current);
+    localStorage.setItem("paintLayers", data);
   };
 
   const load = () => {
-    clear();
-    const data = JSON.parse(localStorage.getItem("paintData") || "[]");
-    data.forEach(({ u, v, color, size }: Stroke) => paint(u, v, color, size));
+    const data = localStorage.getItem("paintLayers");
+    if (data) {
+      const parsedLayers = JSON.parse(data);
+      parsedLayers.forEach((strokes: Stroke[], layerIndex: number) => {
+        const canvas = canvasRefs.current[layerIndex];
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = initialColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          strokes.forEach(({ u, v, color, size }: Stroke) => {
+            const x = u * canvas.width;
+            const y = (1 - v) * canvas.height;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+        strokesRefs.current[layerIndex] = strokes;
+      });
+      updateTexture();
+    } else {
+      console.error("No saved layers found in localStorage");
+    }
   };
 
-  const back = () => {
-    clear();
-    const data = JSON.parse(localStorage.getItem("backPaint") || "[]");
-    data.forEach(({ u, v, color, size }: Stroke) => paint(u, v, color, size));
+  return {
+    texture,
+    strokesRefs,
+    activeLayer,
+    paint,
+    clearLayer,
+    clearAllLayers,
+    setActiveLayer,
+    save,
+    load,
   };
-
-  return { texture, strokesRef, paint, clear, save, load, back };
 }

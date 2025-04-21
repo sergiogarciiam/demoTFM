@@ -30,7 +30,6 @@ export function PaintableModel({
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    localStorage.setItem("backPaint", JSON.stringify(strokesRef.current));
     isPainting.current = true;
     if (e.uv) {
       const { x: u, y: v } = e.uv;
@@ -57,7 +56,7 @@ export function PaintableModel({
 
 type PaintableModelProps = {
   texture: THREE.Texture;
-  strokesRef: React.MutableRefObject<Stroke[]>;
+  strokesRef: React.MutableRefObject<Stroke[][]>; // Updated to match multiple layers
   paint: (u: number, v: number, color?: string, size?: number) => void;
   mode: string;
   selectedColor: string;
